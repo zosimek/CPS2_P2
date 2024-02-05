@@ -1,0 +1,87 @@
+%add paths
+addpath("eeglab\", "ANTeepimport1.13\", "functions\", "app\");
+clear; close all;
+%% %%%%%%%% static values
+
+cnt_files_path = 'c:\Users\zofdo\Ja\STUDIA\MAGISTERKA\data\DSPish_p_02';
+save_directory = 'c:\Users\zofdo\Ja\STUDIA\MAGISTERKA\matlab_shenanigans\inspect_outcome\DSPish_p_02';
+
+file_duration_mark = "duration";
+file_frequency_mark = "frequency";
+duration_standard = "17";
+duration_deviant = "18";
+frequency_standard = "15";
+frequency_deviant = "16";
+
+channel_of_choise = lower("Fz");
+
+%%
+[cnt_file_names, num_cnt_files] = load_cnt_from_dir(cnt_files_path);
+peak_values = cell(1,1);
+
+
+for file = 1:num_cnt_files
+
+    file_name = cnt_file_names{file, 1};
+    disp(file_name)
+
+    % load EEG data along with its event markers
+    % EEG.data in type double
+    [EEG, standard_event_mark, deviant_event_mark] = paradigm_evaluation(cnt_files_path, file_name, file_duration_mark, file_frequency_mark, duration_standard, duration_deviant, frequency_standard, frequency_deviant);
+    
+    % numbering standard events between deviant
+    EEG = number_events(EEG, standard_event_mark, deviant_event_mark);
+    
+    [mmn, standard_final, deviant_final, time] = final_signal(EEG, channel_of_choise, standard_event_mark, deviant_event_mark, 8, 2);
+
+    start_peak_time = 95;  % in ms
+    end_peak_time = 205;   % in ms
+
+
+    figure;
+
+    % Create the first subplot
+    subplot(3, 1, 1);
+    plot(time, standard_final, 'b');  % Replace 'data1' with your actual data
+    title('Subplot 1');
+    xlabel('X-axis label');
+    ylabel('Y-axis label');
+    
+    % Create the second subplot
+    subplot(3, 1, 2);
+    plot(time, data2, 'r');  % Replace 'data2' with your actual data
+    title('Subplot 2');
+    xlabel('X-axis label');
+    ylabel('Y-axis label');
+    
+    % Create the third subplot
+    subplot(3, 1, 3);
+    plot(time, data3, 'g');  % Replace 'data3' with your actual data
+    title('Subplot 3');
+    xlabel('X-axis label');
+    ylabel('Y-axis label');
+    
+    % Adjust the layout
+    sgtitle('Main Title');  % Add a main title
+
+
+    % figure(1)
+    % plot(time, standard_final, 'b')
+    % hold on;
+    % plot(time, deviant_final, 'r')
+    % hold on;
+    % plot(time, mmn(1, :), 'g')
+    % title("Fz")
+    % xline(0, '--', 'Color', 'k', 'LineWidth', 1);
+    % legend('Standard', 'Deviant', 'MMN')
+    % xlim([-100 500])
+    % xlabel('time [ms]')
+    % ylabel('amplitude [\mu V]')
+    % 
+    % annotation('textbox', [0.5, 0.95, 0.1, 0.05], 'String', ([file_name, " - Fz"]), 'HorizontalAlignment', 'center', 'FontSize', 14, 'FontWeight', 'bold', 'Interpreter', 'none', 'EdgeColor', 'none');
+    file_name = file_name(1:end-4);
+    saveas(gcf, fullfile(save_directory, file_name));
+    file_name = file_name + ".png";
+    saveas(gcf, fullfile(save_directory, file_name));
+    close(gcf);
+end
